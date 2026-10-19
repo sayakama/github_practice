@@ -10,14 +10,20 @@ const starterTasks: Task[] = [
 
 export default function App() {
   const [tasks, setTasks] = useState<Task[]>(starterTasks);
-  const [newTitle, setNewTitle] = useState('');
+  const [newTaskTitle, setNewTaskTitle] = useState('');
 
-  const handleAddTask = (event: FormEvent<HTMLFormElement>) => {
+  const handleAddTask = (event: FormEvent) => {
     event.preventDefault();
-    const title = newTitle.trim();
-    if (!title) return;
-    setTasks([...tasks, { id: Date.now(), title, completed: false }]);
-    setNewTitle('');
+    const trimmedTitle = newTaskTitle.trim();
+    if (trimmedTitle) {
+      const newTask: Task = {
+        id: tasks.length + 1,
+        title: trimmedTitle,
+        completed: false
+      };
+      setTasks([...tasks, newTask]);
+      setNewTaskTitle('');
+    }
   };
 
   return (
@@ -67,19 +73,11 @@ export default function App() {
           ))}
         </div>
 
-        <form className="add-task-form" onSubmit={handleAddTask}>
+        <button className="add-task-placeholder" type="button" aria-label="次のタスクを追加する">
           <span className="add-icon"><Plus size={18} /></span>
-          <input
-            className="add-task-input"
-            type="text"
-            value={newTitle}
-            onChange={(event) => setNewTitle(event.target.value)}
-            placeholder="次のタスクをここに追加しよう"
-            aria-label="タスク名"
-          />
-          <button className="add-task-button" type="submit" aria-label="次のタスクを追加する">追加</button>
+          <span>次のタスクをここに追加しよう</span>
           <span className="issue-badge">Quest 3</span>
-        </form>
+        </button>
         <p className="board-hint">このアプリをIssueごとに少しずつ完成させていきます。</p>
       </section>
 
