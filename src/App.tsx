@@ -1,5 +1,5 @@
 import { CalendarDays, Check, Circle, Clock3, Plus, Sparkles } from 'lucide-react';
-import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import type { Task } from './types';
 
 const starterTasks: Task[] = [
@@ -9,7 +9,22 @@ const starterTasks: Task[] = [
 ];
 
 export default function App() {
-  const [tasks] = useState<Task[]>(starterTasks);
+  const [tasks, setTasks] = useState<Task[]>(starterTasks);
+  const [newTaskTitle, setNewTaskTitle] = useState('');
+
+  const handleAddTask = (event: FormEvent) => {
+    event.preventDefault();
+    const trimmedTitle = newTaskTitle.trim();
+    if (trimmedTitle) {
+      const newTask: Task = {
+        id: tasks.length + 1,
+        title: trimmedTitle,
+        completed: false
+      };
+      setTasks([...tasks, newTask]);
+      setNewTaskTitle('');
+    }
+  };
 
   return (
     <main className="page-shell">
@@ -58,11 +73,11 @@ export default function App() {
           ))}
         </div>
 
-        <div className="add-task-placeholder">
+        <button className="add-task-placeholder" type="button" aria-label="次のタスクを追加する">
           <span className="add-icon"><Plus size={18} /></span>
           <span>次のタスクをここに追加しよう</span>
           <span className="issue-badge">Quest 3</span>
-        </div>
+        </button>
         <p className="board-hint">このアプリをIssueごとに少しずつ完成させていきます。</p>
       </section>
 
