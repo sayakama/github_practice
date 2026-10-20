@@ -40,4 +40,25 @@ describe('Team Quest Board', () => {
     await user.click(button);
     expect(screen.getByText('3 tasks')).toBeInTheDocument();
   });
+
+  // タスクの完了状態を切り替えられることを確認するテスト
+  it('toggles task completion', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    const taskButton = screen.getByRole('button', { name: '最初の画面を作るを完了にする' });
+    await user.click(taskButton);
+    expect(screen.getByRole('button', { name: '最初の画面を作るを未完了に戻す' })).toBeInTheDocument();
+  });
+
+  // タスクの完了状態を切り替えた後、再度切り替えられることを確認するテスト
+  it('toggles task completion back and forth', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    const taskButton = screen.getByRole('button', { name: '最初の画面を作るを完了にする' });
+    await user.click(taskButton);
+    expect(screen.getByRole('button', { name: '最初の画面を作るを未完了に戻す' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: '最初の画面を作るを未完了に戻す' }));
+    expect(screen.getByRole('button', { name: '最初の画面を作るを完了にする' })).toBeInTheDocument();
+  });
+
 });
