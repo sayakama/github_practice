@@ -26,6 +26,10 @@ export default function App() {
     }
   };
 
+  const handleToggleTask = (id: number) => {
+    setTasks(tasks.map((task) => task.id === id ? { ...task, completed: !task.completed } : task));
+  };
+
   return (
     <main className="page-shell">
       <header className="topbar">
@@ -62,7 +66,8 @@ export default function App() {
         <div className="task-list">
           {tasks.map((task) => (
             <div className={`task-row${task.completed ? ' is-complete' : ''}`} key={task.id}>
-              <button className="check-button" type="button" aria-label={`${task.title}を完了にする`} disabled>
+              <button className="check-button" type="button" aria-label={task.completed ? `${task.title}を未完了に戻す`: `${task.title}を完了にする`} 
+                onClick={() => handleToggleTask(task.id)}>
                 {task.completed ? <Check size={16} /> : <Circle size={19} />}
               </button>
               <span className="task-title">{task.title}</span>
