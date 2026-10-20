@@ -61,4 +61,46 @@ describe('Team Quest Board', () => {
     expect(screen.getByRole('button', { name: '最初の画面を作るを完了にする' })).toBeInTheDocument();
   });
 
-});
+  // 選んだタスクだけが削除され、他のタスクは残ることを確認するテスト
+  it('deletes only the selected task', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole('button', { name: '最初の画面を作るを削除' }));
+
+    // 押したタスクは消えている
+    expect(screen.queryByText('最初の画面を作る')).not.toBeInTheDocument();
+    // 他のタスクは残っている
+    expect(screen.getByText('チームでアイデアを出す')).toBeInTheDocument();
+    expect(screen.getByText('READMEに使い方を書く')).toBeInTheDocument();
+    // 件数が 3 → 2 になっている
+    expect(screen.getByText('2 tasks')).toBeInTheDocument();
+  });
+
+  // すべてのタスクを削除できることを確認するテスト
+  it('deletes all tasks', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole('button', { name: '最初の画面を作るを削除' }));
+    await user.click(screen.getByRole('button', { name: 'チームでアイデアを出すを削除' }));
+    await user.click(screen.getByRole('button', { name: 'READMEに使い方を書くを削除' }));
+
+    // すべてのタスクが消えている
+    expect(screen.queryByText('最初の画面を作る')).not.toBeInTheDocument();
+    expect(screen.queryByText('チームでアイデアを出す')).not.toBeInTheDocument();
+    expect(screen.queryByText('READMEに使い方を書く')).not.toBeInTheDocument();
+    // 件数が 3 → 0 になっている
+    expect(screen.getByText('0 tasks')).toBeInTheDocument();
+  });
+
+  // キーボードで削除できることを確認するテスト
+  it('deletes a task using keyboard', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    const taskButton = screen.getByRole('button', { name: '最初の画面を作るを削除' });
+    taskButton.focus();
+    await user.keyboard('{Enter}');
+    expect(screen.queryByText('最初の画面を作る')).not.toBeInTheDocument();
+  });
+})

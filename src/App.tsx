@@ -1,4 +1,4 @@
-import { CalendarDays, Check, Circle, Clock3, Plus, Sparkles } from 'lucide-react';
+import { CalendarDays, Check, Circle, Clock3, Plus, Sparkles, Trash2 } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import type { Task } from './types';
 
@@ -28,6 +28,10 @@ export default function App() {
 
   const handleToggleTask = (id: number) => {
     setTasks(tasks.map((task) => task.id === id ? { ...task, completed: !task.completed } : task));
+  };
+
+  const handleDeleteTask = (id: number) => {
+    setTasks(tasks.filter((task) => task.id !== id));
   };
 
   return (
@@ -69,6 +73,9 @@ export default function App() {
               <button className="check-button" type="button" aria-label={task.completed ? `${task.title}を未完了に戻す`: `${task.title}を完了にする`} 
                 onClick={() => handleToggleTask(task.id)}>
                 {task.completed ? <Check size={16} /> : <Circle size={19} />}
+              </button>
+              <button className="delete-button" type="button" aria-label={`${task.title}を削除`} onClick={() => handleDeleteTask(task.id)}>
+                <Trash2 size={15} />
               </button>
               <span className="task-title">{task.title}</span>
               <span className={`task-status ${task.completed ? 'done' : 'todo'}`}>
