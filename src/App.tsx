@@ -73,11 +73,19 @@ export default function App() {
           ))}
         </div>
 
-        <button className="add-task-placeholder" type="button" aria-label="次のタスクを追加する">
+        <form className="add-task-form" onSubmit={handleAddTask}>
           <span className="add-icon"><Plus size={18} /></span>
-          <span>次のタスクをここに追加しよう</span>
+          <input
+            className="add-task-input"
+            type="text"
+            value={newTaskTitle}
+            onChange={(event) => setNewTaskTitle(event.target.value)}
+            placeholder="次のタスクをここに追加しよう"
+            aria-label="タスク名"
+          />
+          <button className="add-task-button" type="submit" aria-label="次のタスクを追加する">追加</button>
           <span className="issue-badge">Quest 3</span>
-        </button>
+        </form>
         <p className="board-hint">このアプリをIssueごとに少しずつ完成させていきます。</p>
       </section>
 
