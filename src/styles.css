@@ -37,6 +37,12 @@ button { font: inherit; }
 .task-status { padding: 5px 9px; border-radius: 12px; font-size: 9px; font-weight: 700; }
 .task-status.done { color: #44a77b; background: #e9f8f0; }
 .task-status.todo { color: #838691; background: #f2f3f5; }
+.edit-button { width: 26px; height: 26px; flex: 0 0 auto; display: grid; place-items: center; padding: 0; border: 0; border-radius: 7px; color: #b8bac4; background: transparent; cursor: pointer; }
+.edit-button:hover { color: #6b64e8; background: #f4f3ff; }
+.edit-task-form { flex: 1; display: flex; align-items: center; gap: 6px; }
+.edit-task-input { flex: 1; min-width: 0; padding: 6px 8px; border: 1px solid #d9d7fb; border-radius: 7px; color: #363741; font: inherit; font-size: 12px; }
+.edit-save-button { padding: 5px 10px; border: 0; border-radius: 12px; color: #fff; background: #6b64e8; font-size: 10px; font-weight: 700; cursor: pointer; }
+.edit-cancel-button { padding: 5px 10px; border: 1px solid #ebedf0; border-radius: 12px; color: #838691; background: #fff; font-size: 10px; font-weight: 700; cursor: pointer; }
 .add-task-form { min-height: 54px; display: flex; align-items: center; gap: 10px; color: #aaaeb8; font-size: 11px; }
 .add-task-input { flex: 1; min-width: 0; padding: 7px 0; border: 0; color: #363741; background: transparent; font: inherit; font-size: 12px; outline: none; }
 .add-task-input::placeholder { color: #aaaeb8; }
