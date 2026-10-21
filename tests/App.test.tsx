@@ -226,5 +226,74 @@ describe('Team Quest Board', () => {
     expect(screen.getByText('3 tasks')).toBeInTheDocument();
   });
 
+  // 編集を始めると現在のタスク名が入力欄に表示され、保存・キャンセルボタンが出ることを確認するテスト
+  it('shows the current title and buttons when editing starts', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole('button', { name: '最初の画面を作るを編集' }));
+
+    expect(screen.getByRole('textbox', { name: '最初の画面を作るの新しい名前' })).toHaveValue('最初の画面を作る');
+    expect(screen.getByRole('button', { name: '最初の画面を作るの編集を保存' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '最初の画面を作るの編集をキャンセル' })).toBeInTheDocument();
+  });
+
+  // 保存すると対象タスクの名前だけが更新され、再読み込み後も残ることを確認するテスト
+  it('saves the edited title only for the target task', async () => {
+    const user = userEvent.setup();
+    const { unmount } = render(<App />);
+
+    await user.click(screen.getByRole('button', { name: '最初の画面を作るを編集' }));
+    const input = screen.getByRole('textbox', { name: '最初の画面を作るの新しい名前' });
+    await user.clear(input);
+    await user.type(input, '  画面を作り直す  ');
+    await user.click(screen.getByRole('button', { name: '最初の画面を作るの編集を保存' }));
+
+    expect(screen.getByText('画面を作り直す')).toBeInTheDocument();
+    expect(screen.queryByText('最初の画面を作る')).not.toBeInTheDocument();
+    // 他のタスクは変わらない
+    expect(screen.getByText('チームでアイデアを出す')).toBeInTheDocument();
+    expect(screen.getByText('READMEに使い方を書く')).toBeInTheDocument();
+
+    // 再読み込みしても残っている
+    unmount();
+    render(<App />);
+    expect(screen.getByText('画面を作り直す')).toBeInTheDocument();
+  });
+
+  // キャンセルすると変更前の名前が保たれることを確認するテスト
+  it('keeps the original title when editing is canceled', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole('button', { name: '最初の画面を作るを編集' }));
+    const input = screen.getByRole('textbox', { name: '最初の画面を作るの新しい名前' });
+    await user.clear(input);
+    await user.type(input, '別の名前');
+    await user.click(screen.getByRole('button', { name: '最初の画面を作るの編集をキャンセル' }));
+
+    expect(screen.getByText('最初の画面を作る')).toBeInTheDocument();
+    expect(screen.queryByText('別の名前')).not.toBeInTheDocument();
+    // 編集欄が閉じている
+    expect(screen.queryByRole('textbox', { name: '最初の画面を作るの新しい名前' })).not.toBeInTheDocument();
+  });
+
+  // 空白だけでは保存されないことを確認するテスト
+  it('does not save an empty or whitespace-only title', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole('button', { name: '最初の画面を作るを編集' }));
+    const input = screen.getByRole('textbox', { name: '最初の画面を作るの新しい名前' });
+    await user.clear(input);
+    await user.type(input, '   ');
+    await user.click(screen.getByRole('button', { name: '最初の画面を作るの編集を保存' }));
+
+    // 保存されず、編集中のまま残っている
+    expect(screen.getByRole('textbox', { name: '最初の画面を作るの新しい名前' })).toBeInTheDocument();
+    // キャンセルすると元の名前が出る
+    await user.click(screen.getByRole('button', { name: '最初の画面を作るの編集をキャンセル' }));
+    expect(screen.getByText('最初の画面を作る')).toBeInTheDocument();
+  });
 
 });

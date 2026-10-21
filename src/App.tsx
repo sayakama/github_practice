@@ -1,4 +1,4 @@
-import { CalendarDays, Check, Circle, Clock3, Plus, Sparkles, Trash2 } from 'lucide-react';
+import { CalendarDays, Check, Circle, Clock3, Pencil, Plus, Sparkles, Trash2 } from 'lucide-react';
 import { useEffect, useState, type FormEvent } from 'react';
 import type { Task } from './types';
 
@@ -43,6 +43,8 @@ export default function App() {
   const [tasks, setTasks] = useState<Task[]>(loadTasks);
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [filter, setFilter] = useState<Filter>('all');
+  const [editingId, setEditingId] = useState<number|null>(null);
+  const [editingTitle, setEditingTitle] = useState('');
 
   useEffect(() => {
     try {
@@ -79,6 +81,29 @@ export default function App() {
     if (filter === 'done') return task.completed;
     return true;
   });
+
+  // 編集を始める:現在のタスク名を入力欄に入れる
+  const handleStartEdit = (task: Task) => {
+    setEditingId(task.id);
+    setEditingTitle(task.title);
+  };
+
+  // 保存する:空白だけなら何もしない。対象のタスクだけ名前を変える
+  const handleSaveEdit = (event: FormEvent) => {
+    event.preventDefault();
+    const trimmedTitle = editingTitle.trim();
+    if (!trimmedTitle) return;
+    setTasks(tasks.map((task) => task.id === editingId ? { ...task, title: trimmedTitle } : task));
+    setEditingId(null);
+    setEditingTitle('');
+  };
+
+  // キャンセルする:tasks には触らず、編集状態だけを終わらせる
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setEditingTitle('');
+  };
+
 
   return (
     <main className="page-shell">
@@ -135,7 +160,28 @@ export default function App() {
               <button className="delete-button" type="button" aria-label={`${task.title}を削除`} onClick={() => handleDeleteTask(task.id)}>
                 <Trash2 size={15} />
               </button>
-              <span className="task-title">{task.title}</span>
+              {editingId === task.id ? (
+                <form className="edit-task-form" onSubmit={handleSaveEdit}>
+                  <input
+                    className="edit-task-input"
+                    type="text"
+                    value={editingTitle}
+                    onChange={(event) => setEditingTitle(event.target.value)}
+                    aria-label={`${task.title}の新しい名前`}
+                    autoFocus
+                  />
+                  <button className="edit-save-button" type="submit" aria-label={`${task.title}の編集を保存`}>保存</button>
+                  <button className="edit-cancel-button" type="button" aria-label={`${task.title}の編集をキャンセル`} onClick={handleCancelEdit}>キャンセル</button>
+                </form>
+              ) : (
+                <>
+                  <span className="task-title">{task.title}</span>
+                  <button className="edit-button" type="button" aria-label={`${task.title}を編集`} onClick={() => handleStartEdit(task)}>
+                    <Pencil size={14} />
+                  </button>
+                </>
+              )}
+
               <span className={`task-status ${task.completed ? 'done' : 'todo'}`}>
                 {task.completed ? '完了' : '未完了'}
               </span>
