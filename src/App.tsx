@@ -1,5 +1,5 @@
 import { CalendarDays, Check, Circle, Clock3, Plus, Sparkles, Trash2 } from 'lucide-react';
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import type { Task } from './types';
 
 const starterTasks: Task[] = [
@@ -7,6 +7,29 @@ const starterTasks: Task[] = [
   { id: 2, title: '最初の画面を作る', completed: false },
   { id: 3, title: 'READMEに使い方を書く', completed: false },
 ];
+
+const STORAGE_KEY = 'questboard-tasks';
+
+const isTask = (value: unknown): value is Task =>
+  typeof value === 'object' &&
+  value !== null &&
+  typeof (value as Task).id === 'number' &&
+  typeof (value as Task).title === 'string' &&
+  typeof (value as Task).completed === 'boolean';
+
+const loadTasks = (): Task[] => {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved === null) return starterTasks;           // 保存データがない
+    const parsed: unknown = JSON.parse(saved);
+    if (Array.isArray(parsed) && parsed.every(isTask)) {
+      return parsed;                                    // 正しいデータ(空配列も含む)
+    }
+    return starterTasks;                                // 形がおかしい
+  } catch {
+    return starterTasks;                                // JSON として読めない
+  }
+};
 
 type Filter = 'all'|'todo'|'done';
 
@@ -17,16 +40,24 @@ const filterLabels: Record<Filter, string> = {
 };
 
 export default function App() {
-  const [tasks, setTasks] = useState<Task[]>(starterTasks);
+  const [tasks, setTasks] = useState<Task[]>(loadTasks);
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [filter, setFilter] = useState<Filter>('all');
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+    } catch {
+    // 保存できない環境(容量オーバーなど)でもアプリは動かし続ける
+    }
+  }, [tasks]);
 
   const handleAddTask = (event: FormEvent) => {
     event.preventDefault();
     const trimmedTitle = newTaskTitle.trim();
     if (trimmedTitle) {
       const newTask: Task = {
-        id: tasks.length + 1,
+        id: Date.now(),
         title: trimmedTitle,
         completed: false
       };
