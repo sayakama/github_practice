@@ -1,9 +1,14 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import App from '../src/App';
 
 describe('Team Quest Board', () => {
+  const STORAGE_KEY = 'questboard-tasks';
+  beforeEach(() => {
+    localStorage.removeItem('questboard-tasks');
+  });
+
   it('shows the starter tasks', () => {
     render(<App />);
     expect(screen.getByRole('heading', { name: 'やることリスト' })).toBeInTheDocument();
@@ -143,5 +148,83 @@ describe('Team Quest Board', () => {
     // 絞り込んでもタスク自体は消えていない
     expect(screen.getByText('3 tasks')).toBeInTheDocument();
   });
+
+  // タスクを追加すると localStorage に保存されることを確認するテスト
+  it('saves tasks to localStorage', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.type(screen.getByRole('textbox', { name: 'タスク名' }), '保存のテスト');
+    await user.click(screen.getByRole('button', { name: '次のタスクを追加する' }));
+
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]');
+    expect(saved).toHaveLength(4);
+    expect(saved[3]).toMatchObject({ title: '保存のテスト', completed: false });
+  });
+
+  // 再読み込み後も、完了・削除した状態が復元されることを確認するテスト
+  it('restores tasks after reload', async () => {
+    const user = userEvent.setup();
+    const { unmount } = render(<App />);
+
+    await user.click(screen.getByRole('button', { name: '最初の画面を作るを完了にする' }));
+    await user.click(screen.getByRole('button', { name: 'READMEに使い方を書くを削除' }));
+
+    // 画面を閉じて、もう一度開く(再読み込みの代わり)
+    unmount();
+    render(<App />);
+
+    expect(screen.getByRole('button', { name: '最初の画面を作るを未完了に戻す' })).toBeInTheDocument();
+    expect(screen.queryByText('READMEに使い方を書く')).not.toBeInTheDocument();
+    expect(screen.getByText('2 tasks')).toBeInTheDocument();
+  });
+
+  // localStorage に保存されたタスクが表示されることを確認するテスト
+  it('loads saved tasks from localStorage', () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([
+      { id: 10, title: '保存済みのタスク', completed: true },
+    ]));
+    render(<App />);
+
+    expect(screen.getByText('保存済みのタスク')).toBeInTheDocument();
+    expect(screen.queryByText('チームでアイデアを出す')).not.toBeInTheDocument();
+    expect(screen.getByText('1 tasks')).toBeInTheDocument();
+  });
+
+ // 保存データがない場合は初期タスクが表示されることを確認するテスト
+  it('shows starter tasks when there is no saved data', () => {
+    render(<App />);
+
+    expect(screen.getByText('チームでアイデアを出す')).toBeInTheDocument();
+    expect(screen.getByText('3 tasks')).toBeInTheDocument();
+  });
+
+  // 空の一覧を保存した場合は、再読み込み後も空のままになることを確認するテスト
+  it('keeps an empty list after reload', () => {
+    localStorage.setItem(STORAGE_KEY, '[]');
+    render(<App />);
+
+    expect(screen.queryByText('チームでアイデアを出す')).not.toBeInTheDocument();
+    expect(screen.getByText('0 tasks')).toBeInTheDocument();
+  });
+
+ // JSON として読めないデータでもクラッシュせず、初期タスクが表示されることを確認するテスト
+  it('shows starter tasks when saved data is broken', () => {
+    localStorage.setItem(STORAGE_KEY, 'これはJSONではない{');
+    render(<App />);
+
+    expect(screen.getByText('チームでアイデアを出す')).toBeInTheDocument();
+    expect(screen.getByText('3 tasks')).toBeInTheDocument();
+  });
+
+  // 形の違うデータでもクラッシュせず、初期タスクが表示されることを確認するテスト
+  it('shows starter tasks when saved data has a wrong shape', () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([{ id: 1, title: 123 }]));
+    render(<App />);
+
+    expect(screen.getByText('チームでアイデアを出す')).toBeInTheDocument();
+    expect(screen.getByText('3 tasks')).toBeInTheDocument();
+  });
+
 
 });
