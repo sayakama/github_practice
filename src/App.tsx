@@ -8,9 +8,18 @@ const starterTasks: Task[] = [
   { id: 3, title: 'READMEに使い方を書く', completed: false },
 ];
 
+type Filter = 'all'|'todo'|'done';
+
+const filterLabels: Record<Filter, string> = {
+  all: 'すべて',
+  todo: '未完了',
+  done: '完了',
+};
+
 export default function App() {
   const [tasks, setTasks] = useState<Task[]>(starterTasks);
   const [newTaskTitle, setNewTaskTitle] = useState('');
+  const [filter, setFilter] = useState<Filter>('all');
 
   const handleAddTask = (event: FormEvent) => {
     event.preventDefault();
@@ -34,6 +43,12 @@ export default function App() {
     setTasks(tasks.filter((task) => task.id !== id));
   };
 
+  const visibleTasks = tasks.filter((task) => {
+    if (filter === 'todo') return !task.completed;
+    if (filter === 'done') return task.completed;
+    return true;
+  });
+
   return (
     <main className="page-shell">
       <header className="topbar">
@@ -56,6 +71,18 @@ export default function App() {
           <span className="hero-card-caption">タスクを完了</span>
           <div className="progress-track"><span style={{ width: `${(1 / tasks.length) * 100}%` }} /></div>
         </div>
+        <div className="filter-group" role="group" aria-label="タスクの絞り込み">
+          {((Object.keys(filterLabels) as Filter[]).map((key) => (
+            <button
+              key={key}
+              className={`filter-button ${filter === key ? 'is-active' : ''}`}
+              onClick={() => setFilter(key)}
+              aria-pressed={filter === key}
+            >
+              {filterLabels[key]}
+            </button>
+          )))}
+        </div>
       </section>
 
       <section className="board" aria-labelledby="tasks-heading">
@@ -68,7 +95,7 @@ export default function App() {
         </div>
 
         <div className="task-list">
-          {tasks.map((task) => (
+          {visibleTasks.map((task) => (
             <div className={`task-row${task.completed ? ' is-complete' : ''}`} key={task.id}>
               <button className="check-button" type="button" aria-label={task.completed ? `${task.title}を未完了に戻す`: `${task.title}を完了にする`} 
                 onClick={() => handleToggleTask(task.id)}>
@@ -79,7 +106,7 @@ export default function App() {
               </button>
               <span className="task-title">{task.title}</span>
               <span className={`task-status ${task.completed ? 'done' : 'todo'}`}>
-                {task.completed ? '完了' : '未着手'}
+                {task.completed ? '完了' : '未完了'}
               </span>
             </div>
           ))}

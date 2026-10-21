@@ -103,4 +103,45 @@ describe('Team Quest Board', () => {
     await user.keyboard('{Enter}');
     expect(screen.queryByText('最初の画面を作る')).not.toBeInTheDocument();
   });
-})
+
+  /// 「未完了」フィルターで未完了のタスクだけが表示されることを確認するテスト
+  it('shows only todo tasks with the todo filter', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole('button', { name: '未完了' }));
+
+    expect(screen.queryByText('チームでアイデアを出す')).not.toBeInTheDocument();
+    expect(screen.getByText('最初の画面を作る')).toBeInTheDocument();
+    expect(screen.getByText('READMEに使い方を書く')).toBeInTheDocument();
+  });
+
+
+  // 「完了」フィルターで完了したタスクだけが表示されることを確認するテスト
+  it('shows only done tasks with the done filter', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole('button', { name: '完了' }));
+
+    expect(screen.getByText('チームでアイデアを出す')).toBeInTheDocument();
+    expect(screen.queryByText('最初の画面を作る')).not.toBeInTheDocument();
+    expect(screen.queryByText('READMEに使い方を書く')).not.toBeInTheDocument();
+  });
+
+  // 絞り込んだあと「すべて」に戻すと全件が表示されることを確認するテスト
+  it('shows all tasks again with the all filter', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole('button', { name: '完了' }));
+    await user.click(screen.getByRole('button', { name: 'すべて' }));
+
+    expect(screen.getByText('チームでアイデアを出す')).toBeInTheDocument();
+    expect(screen.getByText('最初の画面を作る')).toBeInTheDocument();
+    expect(screen.getByText('READMEに使い方を書く')).toBeInTheDocument();
+    // 絞り込んでもタスク自体は消えていない
+    expect(screen.getByText('3 tasks')).toBeInTheDocument();
+  });
+
+});
