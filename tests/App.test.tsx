@@ -296,4 +296,55 @@ describe('Team Quest Board', () => {
     expect(screen.getByText('最初の画面を作る')).toBeInTheDocument();
   });
 
+  // 最初は全3件中1件が完了と表示されることを確認するテスト
+  it('shows the initial progress', () => {
+    render(<App />);
+    expect(screen.getByLabelText('進捗')).toHaveTextContent('1/3');
+    expect(screen.getByRole('progressbar', { name: 'タスクの進捗' })).toHaveAttribute('aria-valuenow', '33');
+  });
+
+  // 完了・追加・削除に応じて進捗が更新されることを確認するテスト
+  it('updates progress when tasks change', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    const progress = screen.getByLabelText('進捗');
+    const bar = screen.getByRole('progressbar', { name: 'タスクの進捗' });
+
+    // 完了にする → 2/3
+    await user.click(screen.getByRole('button', { name: '最初の画面を作るを完了にする' }));
+    expect(progress).toHaveTextContent('2/3');
+    expect(bar).toHaveAttribute('aria-valuenow', '67');
+
+    // 追加する → 2/4
+    await user.type(screen.getByRole('textbox', { name: 'タスク名' }), '新しいタスク');
+    await user.click(screen.getByRole('button', { name: '次のタスクを追加する' }));
+    expect(progress).toHaveTextContent('2/4');
+    expect(bar).toHaveAttribute('aria-valuenow', '50');
+
+    // 完了済みを削除する → 1/3
+    await user.click(screen.getByRole('button', { name: 'チームでアイデアを出すを削除' }));
+    expect(progress).toHaveTextContent('1/3');
+    expect(bar).toHaveAttribute('aria-valuenow', '33');
+  });
+
+  // フィルターで表示を絞っても、進捗は全タスクを基準に計算されることを確認するテスト
+  it('keeps progress based on all tasks when filtered', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole('button', { name: '完了' }));
+
+    expect(screen.getByLabelText('進捗')).toHaveTextContent('1/3');
+    expect(screen.getByRole('progressbar', { name: 'タスクの進捗' })).toHaveAttribute('aria-valuenow', '33');
+  });
+
+  // タスクが0件でもエラーにならず、進捗が0%になることを確認するテスト
+  it('shows 0% progress when there are no tasks', () => {
+    localStorage.setItem(STORAGE_KEY, '[]');
+    render(<App />);
+
+    expect(screen.getByLabelText('進捗')).toHaveTextContent('0/0');
+    expect(screen.getByRole('progressbar', { name: 'タスクの進捗' })).toHaveAttribute('aria-valuenow', '0');
+  });
+
 });
