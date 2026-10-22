@@ -122,7 +122,7 @@ export default function App() {
       <section className="hero" id="top">
         <div className="hero-copy">
           <span className="eyebrow"><CalendarDays size={14} /> GitHub チーム開発入門</span>
-          <h1>アイデアを、<span>動くもの</span>に。</h1>
+          <h1>B<span>動くもの</span>に。</h1>
           <p>GitHubでのチーム開発を、小さなタスクから練習しよう。</p>
         </div>
         <div className="hero-card" aria-label="進捗">
