@@ -82,6 +82,10 @@ export default function App() {
     return true;
   });
 
+  const completedCount = tasks.filter((task) => task.completed).length;
+  const totalCount = tasks.length;
+  const progressPercent = totalCount === 0 ? 0 : Math.round((completedCount / totalCount) * 100);
+
   // 編集を始める:現在のタスク名を入力欄に入れる
   const handleStartEdit = (task: Task) => {
     setEditingId(task.id);
@@ -123,9 +127,18 @@ export default function App() {
         </div>
         <div className="hero-card" aria-label="進捗">
           <span className="hero-card-label">今日の進捗</span>
-          <strong><span className="progress-number">1</span><span className="progress-divider">/</span>{tasks.length}</strong>
+          <strong><span className="progress-number">{completedCount}</span><span className="progress-divider">/</span>{totalCount}</strong>
           <span className="hero-card-caption">タスクを完了</span>
-          <div className="progress-track"><span style={{ width: `${(1 / tasks.length) * 100}%` }} /></div>
+          <div
+            className="progress-track"
+            role="progressbar"
+            aria-label="タスクの進捗"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={progressPercent}
+          >
+            <span style={{ width: `${progressPercent}%` }} />
+          </div>
         </div>
         <div className="filter-group" role="group" aria-label="タスクの絞り込み">
           {((Object.keys(filterLabels) as Filter[]).map((key) => (
@@ -147,7 +160,7 @@ export default function App() {
             <div className="section-kicker"><Clock3 size={14} /> SPRINT 01</div>
             <h2 id="tasks-heading">やることリスト</h2>
           </div>
-          <span className="task-count">{tasks.length} tasks</span>
+          <span className="task-count">{totalCount} tasks</span>
         </div>
 
         <div className="task-list">
