@@ -2,7 +2,7 @@
 
 GitHubを使ったことはあるけれど、チーム開発は初めての人向けの練習用プロジェクトです。React + TypeScript + Viteで小さなタスク管理Webアプリ「Team Quest Board」を育てながら、Issue → branch → commit → Pull Request → review → mergeを練習します。
 
-## 練習手順（Quest 1~10）
+## 練習手順
 
 1. [配布元リポジトリ](https://github.com/hayashichiho/github_practice) の **Fork → Create fork** で自分のアカウントへForkする。
 2. **自分のFork** を開き、**Settings → General → Features → Issues** にチェックを入れる。
